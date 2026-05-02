@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { dashboard, login, register } from '@/routes';
+import CatalogMenu from '@/components/CatalogMenu.vue';
 
 withDefaults(
     defineProps<{
@@ -23,7 +24,8 @@ withDefaults(
         <header
             class="mb-6 w-full max-w-[335px] text-sm not-has-[nav]:hidden lg:max-w-4xl"
         >
-            <nav class="flex items-center justify-end gap-4">
+            <nav class="flex items-center justify-between gap-4">
+                <CatalogMenu :items="$page.props.catalogMenu" />
                 <Link
                     v-if="$page.props.auth.user"
                     :href="dashboard()"

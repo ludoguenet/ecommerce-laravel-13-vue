@@ -12,3 +12,10 @@ export type NavItem = {
     icon?: LucideIcon;
     isActive?: boolean;
 };
+
+export type CatalogMenuItem = {
+    id: number;
+    attribute_data: { name: { en: string }; highlight: boolean; [key: string]: unknown };
+    default_url: { slug: string };
+    children: CatalogMenuItem[];
+};
