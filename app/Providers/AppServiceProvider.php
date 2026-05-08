@@ -2,12 +2,15 @@
 
 namespace App\Providers;
 
+use App\Observers\CollectionObserver;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Lunar\Admin\Support\Facades\LunarPanel;
+use Lunar\Facades\Telemetry;
+use Lunar\Models\Collection;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -17,6 +20,11 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         LunarPanel::register();
+
+        if ($this->app->environment('local') && class_exists(\Laravel\Telescope\TelescopeServiceProvider::class)) {
+            $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
+            $this->app->register(TelescopeServiceProvider::class);
+        }
     }
 
     /**
@@ -47,5 +55,9 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
+
+        Telemetry::optOut();
+
+        Collection::observe(CollectionObserver::class);
     }
 }
