@@ -1,11 +1,6 @@
 <?php
 
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use Lunar\Models\Collection as ModelsCollection;
-use Lunar\Models\CollectionGroup;
-use Lunar\Models\Url;
 
 return [
 
@@ -130,14 +125,6 @@ return [
     |
     */
 
-    'serializable_classes' => [
-        Carbon\Carbon::class,
-        EloquentCollection::class,
-        Collection::class,
-        Kalnoy\Nestedset\Collection::class,
-        ModelsCollection::class,
-        CollectionGroup::class,
-        Url::class,
-    ],
+    'serializable_classes' => true,
 
 ];
