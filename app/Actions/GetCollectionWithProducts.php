@@ -19,12 +19,7 @@ class GetCollectionWithProducts
             ->inStockOnly($request->boolean('in_stock'))
             ->get();
 
-        $filters = [
-            'sort' => $request->input('sort'),
-            'in_stock' => $request->boolean('in_stock'),
-        ];
-
-        return compact('products', 'activeCollectionIds', 'collection', 'slug', 'filters');
+        return compact('products', 'activeCollectionIds', 'collection', 'slug');
     }
 
     private function fromSlug(string $slug): Collection

@@ -3,6 +3,7 @@ import ProductCard from '@/components/ProductCard.vue';
 import { show } from '@/actions/App/Http/Controllers/CollectionController';
 import { Product } from '@/types/products';
 import { Head, Form } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 const props = defineProps<{
     collection: {
@@ -14,6 +15,9 @@ const props = defineProps<{
     slug: string;
     filters: { sort?: string; in_stock?: boolean };
 }>();
+
+const selectedSort = ref(props.filters.sort ?? '');
+const inStock = ref(props.filters.in_stock ?? false);
 </script>
 
 <template>
@@ -25,7 +29,7 @@ const props = defineProps<{
         <Form v-bind="show.form(slug)" #default="{ submit }" class="mt-4 flex items-center gap-4">
             <select
                 name="sort"
-                :defaultValue="filters.sort"
+                v-model="selectedSort"
                 @change="() => submit()"
                 class="rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-700 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-neutral-300"
             >
@@ -39,7 +43,7 @@ const props = defineProps<{
                     type="checkbox"
                     name="in_stock"
                     value="1"
-                    :defaultChecked="filters.in_stock"
+                    v-model="inStock"
                     @change="() => submit()"
                     class="h-4 w-4 rounded border-neutral-300 accent-neutral-900"
                 />

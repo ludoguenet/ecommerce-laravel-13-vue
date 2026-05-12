@@ -64,9 +64,13 @@ class CollectionController extends Controller
 
         // $products = $query->get();
 
-        $data = $this->action->execute($request, $slug);
-
-        return inertia('Collections/Show', $data);
+        return inertia('Collections/Show', [
+            ...$this->action->execute($request, $slug),
+            'filters' => [
+                'sort' => $request->input('sort'),
+                'in_stock' => $request->boolean('in_stock'),
+            ],
+        ]);
         // return inertia('Collections/Show', [
         //     'products' => $products,
         //     'collection' => $collection,
