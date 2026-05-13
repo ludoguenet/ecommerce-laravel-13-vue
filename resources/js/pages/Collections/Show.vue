@@ -33,9 +33,9 @@ const inStock = ref(props.filters.in_stock ?? false);
                 @change="() => submit()"
                 class="rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-700 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-neutral-300"
             >
-                <option value="">Default</option>
-                <option value="stock_desc">Stock: High to Low</option>
-                <option value="stock_asc">Stock: Low to High</option>
+                <option value="">Aucun filtre</option>
+                <option value="stock_desc">Stock: Du plus haut au plus bas</option>
+                <option value="stock_asc">Stock: Du plus bas au plus haut</option>
             </select>
 
             <label class="flex cursor-pointer items-center gap-2 text-sm text-neutral-600">
@@ -47,7 +47,7 @@ const inStock = ref(props.filters.in_stock ?? false);
                     @change="() => submit()"
                     class="h-4 w-4 rounded border-neutral-300 accent-neutral-900"
                 />
-                In stock only
+                En stock
             </label>
         </Form>
 
