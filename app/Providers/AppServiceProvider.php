@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Product;
 use App\Observers\CollectionObserver;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
@@ -9,8 +10,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Lunar\Admin\Support\Facades\LunarPanel;
+use Lunar\Facades\ModelManifest;
 use Lunar\Facades\Telemetry;
 use Lunar\Models\Collection;
+use Lunar\Models\Contracts\Product as ProductContract;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -57,6 +60,8 @@ class AppServiceProvider extends ServiceProvider
         );
 
         Telemetry::optOut();
+
+        ModelManifest::replace(ProductContract::class, Product::class);
 
         Collection::observe(CollectionObserver::class);
     }

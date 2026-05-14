@@ -20,6 +20,7 @@ class ProductQueryBuilder
                 'variants.prices.currency',
                 'media',
                 'brand',
+                'tags',
             ]);
 
         return new static($query);
