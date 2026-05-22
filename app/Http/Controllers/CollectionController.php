@@ -35,13 +35,12 @@ class CollectionController extends Controller
         $inStock = $request->boolean('in_stock', false);
 
         match ($sort) {
-             'default', null => $query->reorder(),
-             'stock_asc' => $query->join('lunar_product_variants', 'lunar_products.id', '=', 'lunar_product_variants.product_id')
+            'default', null => $query->reorder(),
+            'stock_asc' => $query->join('lunar_product_variants', 'lunar_products.id', '=', 'lunar_product_variants.product_id')
                 ->orderBy('lunar_product_variants.stock'),
-             'stock_desc' => $query->join('lunar_product_variants', 'lunar_products.id', '=', 'lunar_product_variants.product_id')
+            'stock_desc' => $query->join('lunar_product_variants', 'lunar_products.id', '=', 'lunar_product_variants.product_id')
                 ->orderByDesc('lunar_product_variants.stock'),
         };
-
 
         if ($inStock) {
             $query->whereHas('variants',
@@ -49,9 +48,7 @@ class CollectionController extends Controller
             );
         }
 
-
         $products = $query->get();
-
 
         return inertia('Collections/Show', [
             'products' => $products,
