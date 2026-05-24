@@ -24,6 +24,7 @@ class ProductQueryBuilder
             ->with([
                 'media',
                 'brand',
+                'tags',
             ]);
 
         return new static($query);
