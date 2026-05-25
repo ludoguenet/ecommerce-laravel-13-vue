@@ -45,7 +45,7 @@
                 class="mt-6 flex items-center justify-between border-t border-neutral-100 pt-4"
             >
                 <span class="text-xs text-neutral-400">
-                    #{{ product.id }}
+                 {{ computedPrice()}}
                 </span>
 
                 <button
@@ -61,7 +61,14 @@
 <script setup lang="ts">
 import { Product } from '@/types/products';
 
-defineProps<{
+const props = defineProps<{
     product: Product;
 }>();
+
+const computedPrice = () => {
+    return Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: props.product.variants[0].prices[0].currency.code,
+    }).format(props.product.variants[0].prices[0].price.value / 100);
+};
 </script>

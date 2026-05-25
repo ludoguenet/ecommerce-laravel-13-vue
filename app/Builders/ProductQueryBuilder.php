@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Lunar\Models\Collection;
+use Lunar\Models\ProductVariant;
 
 class ProductQueryBuilder
 {
@@ -25,6 +26,7 @@ class ProductQueryBuilder
                 'media',
                 'brand',
                 'tags',
+                'variants.prices.currency',
             ]);
 
         return new static($query);
@@ -38,6 +40,14 @@ class ProductQueryBuilder
                 ->orderBy('lunar_product_variants.stock'),
             'stock_desc' => $this->query->join('lunar_product_variants', 'lunar_products.id', '=', 'lunar_product_variants.product_id')
                 ->orderByDesc('lunar_product_variants.stock'),
+            'price_asc' => $this->query->join('lunar_product_variants', 'lunar_products.id', '=', 'lunar_product_variants.product_id')
+                ->join('lunar_prices', 'lunar_product_variants.id', '=', 'lunar_prices.priceable_id')
+                ->where('lunar_prices.priceable_type', (new ProductVariant)->getMorphClass())
+                ->orderBy('lunar_prices.price'),
+            'price_desc' => $this->query->join('lunar_product_variants', 'lunar_products.id', '=', 'lunar_product_variants.product_id')
+                ->join('lunar_prices', 'lunar_product_variants.id', '=', 'lunar_prices.priceable_id')
+                ->where('lunar_prices.priceable_type', (new ProductVariant)->getMorphClass())
+                ->orderByDesc('lunar_prices.price'),
         };
 
         return $this;
@@ -50,6 +60,23 @@ class ProductQueryBuilder
             $this->query->whereHas('variants',
                 fn ($variantQuery) => $variantQuery->where(fn ($q) => $q->where('stock', '>', 0)->orWhere('purchasable', 'always'))
             );
+        }
+
+        return $this;
+    }
+
+    public function pricesBetween(?int $minPrice, ?int $maxPrice): static
+    {
+        if ($minPrice !== null) {
+            $this->query->whereHas('variants.prices', function ($priceQuery) use ($minPrice) {
+                $priceQuery->where('price', '>=', $minPrice * 100);
+            });
+        }
+
+        if ($maxPrice !== null) {
+            $this->query->whereHas('variants.prices', function ($priceQuery) use ($maxPrice) {
+                $priceQuery->where('price', '<=', $maxPrice * 100);
+            });
         }
 
         return $this;

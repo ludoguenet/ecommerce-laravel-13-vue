@@ -31,6 +31,10 @@ class CollectionController extends Controller
         $products = ProductQueryBuilder::fromCollection($collection)
             ->sort($sort)
             ->inStock($inStock)
+            ->pricesBetween(
+                $request->input('min_price'),
+                $request->input('max_price'),
+            )
             ->get();
 
         return inertia('Collections/Show', [
@@ -40,6 +44,8 @@ class CollectionController extends Controller
             'slug' => $slug,
             'sort' => $sort,
             'in_stock' => $inStock,
+            'min_price' => $request->input('min_price'),
+            'max_price' => $request->input('max_price'),
         ]);
     }
 }
