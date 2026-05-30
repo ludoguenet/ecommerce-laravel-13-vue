@@ -61,10 +61,10 @@ const handleInStockChange = (val: boolean | 'indeterminate') => {
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="default">Par défaut</SelectItem>
-                        <SelectItem value="stock_asc">Du plus petit au plus grand</SelectItem>
-                        <SelectItem value="stock_desc">Du plus grand au plus petit</SelectItem>
-                        <SelectItem value="price_asc">Du moins cher au plus cher</SelectItem>
-                        <SelectItem value="price_desc">Du plus cher au moins cher</SelectItem>
+                        <SelectItem value="stock_asc">Stock croissant</SelectItem>
+                        <SelectItem value="stock_desc">Stock décroissant</SelectItem>
+                        <SelectItem value="price_asc">Prix croissant</SelectItem>
+                        <SelectItem value="price_desc">Prix décroissant</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
@@ -88,8 +88,13 @@ const handleInStockChange = (val: boolean | 'indeterminate') => {
             </div>
         </div>
 
-        <div class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div v-if="products.length" class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <ProductCard v-for="product in products" :key="product.id" :product="product" />
+        </div>
+
+        <div v-else class="mt-16 flex flex-col items-center gap-3 text-center text-neutral-400">
+            <span class="text-4xl">☕</span>
+            <p class="text-sm">Aucun produit ne correspond à vos filtres.</p>
         </div>
     </div>
 </template>
