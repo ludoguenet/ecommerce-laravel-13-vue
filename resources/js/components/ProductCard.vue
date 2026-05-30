@@ -9,6 +9,77 @@
                 :alt="product.attribute_data.name?.en"
                 class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
             />
+            <div
+                v-else
+                class="flex h-full w-full items-center justify-center bg-gradient-to-br from-amber-50 to-stone-100"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 80 80"
+                    class="h-20 w-20 opacity-40 transition duration-300 group-hover:scale-110 group-hover:opacity-60"
+                    fill="none"
+                >
+                    <!-- Cup body -->
+                    <path
+                        d="M18 34h34l-5 24H23L18 34Z"
+                        fill="#92400e"
+                        opacity="0.7"
+                    />
+                    <!-- Cup rim -->
+                    <rect
+                        x="16"
+                        y="30"
+                        width="38"
+                        height="6"
+                        rx="3"
+                        fill="#78350f"
+                        opacity="0.8"
+                    />
+                    <!-- Handle -->
+                    <path
+                        d="M52 40 Q64 40 64 50 Q64 60 52 60"
+                        stroke="#78350f"
+                        stroke-width="4"
+                        stroke-linecap="round"
+                        fill="none"
+                        opacity="0.75"
+                    />
+                    <!-- Steam lines -->
+                    <path
+                        d="M30 24 Q32 18 30 12"
+                        stroke="#a16207"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        fill="none"
+                        opacity="0.5"
+                    />
+                    <path
+                        d="M40 22 Q42 16 40 10"
+                        stroke="#a16207"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        fill="none"
+                        opacity="0.5"
+                    />
+                    <path
+                        d="M50 24 Q52 18 50 12"
+                        stroke="#a16207"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        fill="none"
+                        opacity="0.5"
+                    />
+                    <!-- Saucer -->
+                    <ellipse
+                        cx="35"
+                        cy="59"
+                        rx="22"
+                        ry="4"
+                        fill="#92400e"
+                        opacity="0.3"
+                    />
+                </svg>
+            </div>
         </div>
 
         <div class="p-5">
