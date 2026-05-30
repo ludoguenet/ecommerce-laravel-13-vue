@@ -38,7 +38,12 @@ function isActive(item: CatalogMenuItem): boolean {
             <NavigationMenuItem v-for="item in items" :key="item.id">
                 <template v-if="item.children.length > 0">
                     <NavigationMenuTrigger
-                        :class="[item.attribute_data.highlight ? 'text-yellow-500' : '', isActive(item) ? 'bg-accent' : '']"
+                        :class="[
+                            item.attribute_data.highlight
+                                ? 'text-yellow-500'
+                                : '',
+                            isActive(item) ? 'bg-accent' : '',
+                        ]"
                     >
                         {{ itemName(item) }}
                     </NavigationMenuTrigger>
@@ -48,7 +53,7 @@ function isActive(item: CatalogMenuItem): boolean {
                                 <NavigationMenuLink :as-child="true">
                                     <Link
                                         :href="itemHref(child)"
-                                        class="block select-none rounded-sm px-3 py-2 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                                        class="block rounded-sm px-3 py-2 text-sm leading-none no-underline transition-colors outline-none select-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                                     >
                                         {{ itemName(child) }}
                                     </Link>
@@ -58,7 +63,13 @@ function isActive(item: CatalogMenuItem): boolean {
                     </NavigationMenuContent>
                 </template>
                 <NavigationMenuLink v-else :as-child="true">
-                    <Link :href="itemHref(item)" :class="[navigationMenuTriggerStyle(), isActive(item) ? 'bg-accent' : '']">
+                    <Link
+                        :href="itemHref(item)"
+                        :class="[
+                            navigationMenuTriggerStyle(),
+                            isActive(item) ? 'bg-accent' : '',
+                        ]"
+                    >
                         {{ itemName(item) }}
                     </Link>
                 </NavigationMenuLink>

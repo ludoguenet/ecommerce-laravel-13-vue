@@ -1,6 +1,6 @@
 <template>
     <div
-        class="group overflow-hidden rounded-2xl border border-neutral-200 bg-white transition hover:-translate-y-1 hover:shadow-lg"
+        class="group rounded-2xl border border-neutral-200 bg-white transition hover:-translate-y-1 hover:shadow-lg"
     >
         <div class="aspect-[4/3] overflow-hidden bg-neutral-100">
             <img
@@ -16,7 +16,7 @@
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 80 80"
-                    class="h-20 w-20 opacity-40 transition duration-300 group-hover:opacity-60 group-hover:scale-110"
+                    class="h-20 w-20 opacity-40 transition duration-300 group-hover:scale-110 group-hover:opacity-60"
                     fill="none"
                 >
                     <!-- Cup body -->
@@ -26,7 +26,15 @@
                         opacity="0.7"
                     />
                     <!-- Cup rim -->
-                    <rect x="16" y="30" width="38" height="6" rx="3" fill="#78350f" opacity="0.8" />
+                    <rect
+                        x="16"
+                        y="30"
+                        width="38"
+                        height="6"
+                        rx="3"
+                        fill="#78350f"
+                        opacity="0.8"
+                    />
                     <!-- Handle -->
                     <path
                         d="M52 40 Q64 40 64 50 Q64 60 52 60"
@@ -37,17 +45,48 @@
                         opacity="0.75"
                     />
                     <!-- Steam lines -->
-                    <path d="M30 24 Q32 18 30 12" stroke="#a16207" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.5" />
-                    <path d="M40 22 Q42 16 40 10" stroke="#a16207" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.5" />
-                    <path d="M50 24 Q52 18 50 12" stroke="#a16207" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.5" />
+                    <path
+                        d="M30 24 Q32 18 30 12"
+                        stroke="#a16207"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        fill="none"
+                        opacity="0.5"
+                    />
+                    <path
+                        d="M40 22 Q42 16 40 10"
+                        stroke="#a16207"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        fill="none"
+                        opacity="0.5"
+                    />
+                    <path
+                        d="M50 24 Q52 18 50 12"
+                        stroke="#a16207"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        fill="none"
+                        opacity="0.5"
+                    />
                     <!-- Saucer -->
-                    <ellipse cx="35" cy="59" rx="22" ry="4" fill="#92400e" opacity="0.3" />
+                    <ellipse
+                        cx="35"
+                        cy="59"
+                        rx="22"
+                        ry="4"
+                        fill="#92400e"
+                        opacity="0.3"
+                    />
                 </svg>
             </div>
         </div>
 
         <div class="p-5">
-            <div v-if="product.tags.length" class="mb-3 flex flex-wrap gap-1.5">
+            <div
+                v-if="product.tags?.length"
+                class="mb-3 flex flex-wrap gap-1.5"
+            >
                 <span
                     v-for="tag in product.tags"
                     :key="tag.id"
@@ -61,12 +100,12 @@
                 <h2
                     class="line-clamp-1 text-base font-semibold tracking-tight text-neutral-900"
                 >
-                    {{ product.attribute_data.name?.en }}
+                    {{ product.attribute_data?.name?.en }}
                 </h2>
 
                 <div
                     class="line-clamp-2 text-sm leading-relaxed text-neutral-500"
-                    v-html="product.attribute_data.description?.en"
+                    v-html="product.attribute_data?.description?.en"
                 />
             </div>
 
@@ -95,6 +134,9 @@ const props = defineProps<{
 }>();
 
 const computedPrice = () => {
+    if (!props.product.variants?.[0]?.prices?.[0]) {
+        return 'Prix non disponible';
+    }
     return Intl.NumberFormat('fr-FR', {
         style: 'currency',
         currency: props.product.variants[0].prices[0].currency.code,

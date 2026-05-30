@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Builders\ProductQueryBuilder;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Inertia\Response;
 use Lunar\Models\Collection;
 use Lunar\Models\Url;
@@ -34,11 +35,10 @@ class CollectionController extends Controller
             ->pricesBetween(
                 $request->input('min_price'),
                 $request->input('max_price'),
-            )
-            ->get();
+            );
 
-        return inertia('Collections/Show', [
-            'products' => $products,
+        return Inertia::render('Collections/Show', [
+            'products' => Inertia::scroll(fn () => $products->paginate()),
             'collection' => $collection,
             'activeCollectionIds' => $activeCollectionIds,
             'slug' => $slug,

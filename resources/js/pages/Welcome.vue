@@ -61,7 +61,8 @@ withDefaults(
                 >
                     <h1 class="mb-1 font-medium">Laravel Coffee</h1>
                     <p class="mb-8 text-[#706f6c] dark:text-[#A1A09A]">
-                        Cafés d'exception sourcés à travers le monde,<br />torréfiés avec soin pour chaque tasse.
+                        Cafés d'exception sourcés à travers le monde,<br />torréfiés
+                        avec soin pour chaque tasse.
                     </p>
                     <ul class="flex gap-3 text-sm leading-normal">
                         <li v-if="$page.props.auth.user">

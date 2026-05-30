@@ -5,6 +5,7 @@ namespace App\Builders;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Lunar\Models\Collection;
 use Lunar\Models\ProductVariant;
 
@@ -85,5 +86,10 @@ class ProductQueryBuilder
     public function get(): EloquentCollection
     {
         return $this->query->get();
+    }
+
+    public function paginate(?int $perPage = 20): LengthAwarePaginator
+    {
+        return $this->query->paginate($perPage);
     }
 }

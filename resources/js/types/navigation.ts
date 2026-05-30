@@ -15,7 +15,11 @@ export type NavItem = {
 
 export type CatalogMenuItem = {
     id: number;
-    attribute_data: { name: { en: string }; highlight: boolean; [key: string]: unknown };
+    attribute_data: {
+        name: { en: string };
+        highlight: boolean;
+        [key: string]: unknown;
+    };
     default_url: { slug: string };
     children: CatalogMenuItem[];
 };
