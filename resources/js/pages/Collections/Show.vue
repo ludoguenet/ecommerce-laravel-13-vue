@@ -120,15 +120,15 @@ const handleInStockChange = (val: boolean | 'indeterminate') => {
         </div>
 
         <div class="overflow-y-auto grow">
-            <InfiniteScroll data="products" class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <InfiniteScroll v-if="products.data.length" data="products" class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <div v-for="product in products.data" :key="product.id" >
                     <ProductCard v-if="product" :product="product" />
                 </div>
             </InfiniteScroll>
+            <div v-else class="mt-16 flex flex-col items-center gap-3 text-center text-neutral-400">
+                <span class="text-4xl">☕</span>
+                <p class="text-sm">Aucun produit ne correspond à vos filtres.</p>
+            </div>
         </div>
-        <!-- <div v-else class="mt-16 flex flex-col items-center gap-3 text-center text-neutral-400">
-            <span class="text-4xl">☕</span>
-            <p class="text-sm">Aucun produit ne correspond à vos filtres.</p>
-        </div> -->
     </div>
 </template>
