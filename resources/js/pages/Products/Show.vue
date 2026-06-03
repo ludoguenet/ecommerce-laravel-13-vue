@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Product, ProductVariant } from '@/types/products';
 import { Head } from '@inertiajs/vue3';
+import { ChevronLeft } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 const props = defineProps<{
@@ -46,6 +47,8 @@ const comparePrice = computed(() => {
     }).format(price.compare_price.value / 100);
 });
 
+const goBack = () => window.history.back();
+
 const stockStatus = computed(() => {
     const variant = firstVariant.value;
     if (!variant) {
@@ -71,6 +74,14 @@ const stockStatus = computed(() => {
 
     <div class="min-h-screen bg-[#FDFDFC] text-[#1b1b18] dark:bg-[#0a0a0a]">
         <div class="mx-auto max-w-6xl px-6 py-10">
+            <button
+                class="mb-8 flex items-center gap-1.5 text-sm text-neutral-500 transition hover:text-neutral-900"
+                @click="goBack"
+            >
+                <ChevronLeft class="size-4" />
+                Retour aux produits
+            </button>
+
             <div class="grid gap-12 lg:grid-cols-2">
                 <!-- Gallery -->
                 <div class="flex flex-col gap-4">
