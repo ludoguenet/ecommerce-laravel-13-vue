@@ -1,4 +1,5 @@
 <template>
+    <Link :href="show(product.default_url.slug)">
     <div
         class="group rounded-2xl border border-neutral-200 bg-white transition hover:-translate-y-1 hover:shadow-lg"
     >
@@ -124,10 +125,13 @@
             </div>
         </div>
     </div>
+    </Link>
 </template>
 
 <script setup lang="ts">
 import { Product } from '@/types/products';
+import { Link } from '@inertiajs/vue3';
+import { show } from '@/actions/App/Http/Controllers/ProductController';
 
 const props = defineProps<{
     product: Product;

@@ -28,6 +28,7 @@ class ProductQueryBuilder
                 'brand',
                 'tags',
                 'variants.prices.currency',
+                'defaultUrl',
             ]);
 
         return new static($query);
