@@ -26,6 +26,8 @@ class ProductController extends Controller
             ])
             ->firstOrFail();
 
+        $product->append(['small_image_url', 'medium_images_urls']);
+
         return inertia('Products/Show', [
             'product' => $product,
         ]);

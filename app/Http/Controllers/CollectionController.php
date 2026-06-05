@@ -38,7 +38,12 @@ class CollectionController extends Controller
             );
 
         return Inertia::render('Collections/Show', [
-            'products' => Inertia::scroll(fn () => $products->paginate()),
+            'products' => Inertia::scroll(function () use ($products) {
+                $paginator = $products->paginate();
+                $paginator->getCollection()->each->append(['small_image_url']);
+
+                return $paginator;
+            }),
             'collection' => $collection,
             'activeCollectionIds' => $activeCollectionIds,
             'slug' => $slug,
