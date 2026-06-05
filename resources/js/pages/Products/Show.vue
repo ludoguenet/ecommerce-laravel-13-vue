@@ -153,6 +153,16 @@ const stockStatus = computed(() => {
                         </span>
                     </div>
 
+                    <div v-if="product.tags?.length" class="flex flex-wrap gap-2">
+                        <span
+                            v-for="tag in product.tags"
+                            :key="tag.id"
+                            class="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-600"
+                        >
+                            {{ tag.value }}
+                        </span>
+                    </div>
+
                     <div
                         v-if="description"
                         class="prose prose-sm prose-neutral max-w-none border-t border-neutral-100 pt-6 text-neutral-600"

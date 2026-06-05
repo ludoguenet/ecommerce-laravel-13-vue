@@ -23,6 +23,7 @@ class ProductController extends Controller
                 'media',
                 'brand',
                 'productOptions.values',
+                'tags',
             ])
             ->firstOrFail();
 
