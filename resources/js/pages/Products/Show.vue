@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Product, ProductVariant } from '@/types/products';
+import { Product, ProductOption, ProductOptionValue, ProductVariant } from '@/types/products';
 import { Head } from '@inertiajs/vue3';
 import { ChevronLeft } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
@@ -23,42 +23,93 @@ const brandName = computed(() => {
     return props.product.brand.attribute_data?.name?.en ?? props.product.brand.name ?? null;
 });
 
-const firstVariant = computed<ProductVariant | null>(() => props.product.variants?.[0] ?? null);
+// --- Variant selection ---
+
+const selectedValueIds = ref<Record<number, number>>({});
+
+const initSelection = () => {
+    const first = props.product.variants?.[0];
+    if (!first?.values?.length) {
+        return;
+    }
+    first.values.forEach((v) => {
+        selectedValueIds.value[v.product_option_id] = v.id;
+    });
+};
+
+initSelection();
+
+const selectedVariant = computed<ProductVariant | null>(() => {
+    const selectedIds = Object.values(selectedValueIds.value);
+    if (selectedIds.length === 0) {
+        return props.product.variants?.[0] ?? null;
+    }
+    return (
+        (props.product.variants ?? []).find((variant) => {
+            const variantValueIds = (variant.values ?? []).map((v) => v.id);
+            return selectedIds.every((id) => variantValueIds.includes(id));
+        }) ?? null
+    );
+});
+
+const selectValue = (optionId: number, valueId: number) => {
+    selectedValueIds.value = { ...selectedValueIds.value, [optionId]: valueId };
+};
+
+const isValueSelected = (optionId: number, valueId: number): boolean =>
+    selectedValueIds.value[optionId] === valueId;
+
+const isValueAvailable = (optionId: number, valueId: number): boolean => {
+    const otherSelections = Object.entries(selectedValueIds.value)
+        .filter(([oid]) => Number(oid) !== optionId)
+        .map(([, vid]) => Number(vid));
+
+    return (props.product.variants ?? []).some((variant) => {
+        const ids = (variant.values ?? []).map((v) => v.id);
+        return ids.includes(valueId) && otherSelections.every((id) => ids.includes(id));
+    });
+};
+
+const optionName = (option: ProductOption): string =>
+    option.name['en'] ?? Object.values(option.name)[0] ?? '';
+
+const optionValueName = (value: ProductOptionValue): string =>
+    value.name['en'] ?? Object.values(value.name)[0] ?? '';
+
+const selectedOptionValueName = (option: ProductOption): string => {
+    const selectedId = selectedValueIds.value[option.id];
+    const value = option.values.find((v) => v.id === selectedId);
+    return value ? optionValueName(value) : '';
+};
+
+const hasOptions = computed(() => (props.product.product_options?.length ?? 0) > 0);
+
+// --- Price / stock (driven by selectedVariant) ---
+
+const formatPrice = (value: number, currencyCode: string): string =>
+    new Intl.NumberFormat('fr-FR', { style: 'currency', currency: currencyCode }).format(value / 100);
 
 const formattedPrice = computed(() => {
-    const price = firstVariant.value?.prices?.[0];
-    if (!price) {
-        return null;
-    }
-    return new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: price.currency.code,
-    }).format(price.price.value / 100);
+    const price = selectedVariant.value?.prices?.[0];
+    return price ? formatPrice(price.price.value, price.currency.code) : null;
 });
 
 const comparePrice = computed(() => {
-    const price = firstVariant.value?.prices?.[0];
-    if (!price || !price.compare_price.value) {
+    const price = selectedVariant.value?.prices?.[0];
+    if (!price?.compare_price.value) {
         return null;
     }
-    return new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: price.currency.code,
-    }).format(price.compare_price.value / 100);
+    return formatPrice(price.compare_price.value, price.currency.code);
 });
 
-const goBack = () => window.history.back();
-
 const stockStatus = computed(() => {
-    const variant = firstVariant.value;
+    const variant = selectedVariant.value;
     if (!variant) {
         return null;
     }
-
     if (variant.purchasable === 'always') {
-         return { label: 'En stock', color: 'text-green-700 bg-green-50' };
+        return { label: 'En stock', color: 'text-green-700 bg-green-50' };
     }
-
     if (variant.purchasable === 'in_stock' && variant.stock > 0) {
         return { label: 'En stock', color: 'text-green-700 bg-green-50' };
     }
@@ -67,6 +118,8 @@ const stockStatus = computed(() => {
     }
     return { label: 'Épuisé', color: 'text-red-700 bg-red-50' };
 });
+
+const goBack = () => window.history.back();
 </script>
 
 <template>
@@ -137,19 +190,51 @@ const stockStatus = computed(() => {
                         </span>
                     </div>
 
+                    <!-- Option selectors -->
+                    <div v-if="hasOptions" class="flex flex-col gap-5">
+                        <div v-for="option in product.product_options" :key="option.id">
+                            <div class="mb-2.5 flex items-baseline gap-2">
+                                <span class="text-xs font-semibold tracking-wide text-neutral-500 uppercase">
+                                    {{ optionName(option) }}
+                                </span>
+                                <span class="text-xs text-neutral-400">
+                                    {{ selectedOptionValueName(option) }}
+                                </span>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <button
+                                    v-for="value in option.values"
+                                    :key="value.id"
+                                    class="rounded-lg border px-3 py-1.5 text-sm font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-1"
+                                    :class="
+                                        isValueSelected(option.id, value.id)
+                                            ? 'border-neutral-900 bg-neutral-900 text-white'
+                                            : isValueAvailable(option.id, value.id)
+                                              ? 'border-neutral-200 bg-white text-neutral-700 hover:border-neutral-400 hover:bg-neutral-50'
+                                              : 'cursor-not-allowed border-neutral-100 bg-neutral-50 text-neutral-300 line-through'
+                                    "
+                                    :disabled="!isValueAvailable(option.id, value.id)"
+                                    @click="selectValue(option.id, value.id)"
+                                >
+                                    {{ optionValueName(value) }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="flex flex-wrap items-center gap-3">
                         <span
-                        v-if="stockStatus"
-                        class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
-                        :class="stockStatus.color"
+                            v-if="stockStatus"
+                            class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
+                            :class="stockStatus.color"
                         >
-                        {{ stockStatus.label }}
-                    </span>
-                        <span v-if="firstVariant?.sku" class="text-xs text-neutral-400">
-                            SKU&nbsp;: {{ firstVariant.sku }}
+                            {{ stockStatus.label }}
                         </span>
-                        <span v-if="firstVariant?.stock" class="text-xs text-neutral-400">
-                            {{ firstVariant.stock }} en stock
+                        <span v-if="selectedVariant?.sku" class="text-xs text-neutral-400">
+                            SKU&nbsp;: {{ selectedVariant.sku }}
+                        </span>
+                        <span v-if="selectedVariant?.stock" class="text-xs text-neutral-400">
+                            {{ selectedVariant.stock }} en stock
                         </span>
                     </div>
 

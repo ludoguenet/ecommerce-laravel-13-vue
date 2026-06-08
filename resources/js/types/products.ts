@@ -46,6 +46,28 @@ export type ProductVariantPrice = {
     currency: ProductCurrency;
 };
 
+export type ProductOptionValue = {
+    id: number;
+    product_option_id: number;
+    name: Record<string, string>;
+    position: number;
+};
+
+export type ProductOption = {
+    id: number;
+    name: Record<string, string>;
+    label?: Record<string, string>;
+    handle?: string;
+    values: ProductOptionValue[];
+};
+
+export type ProductVariantValue = {
+    id: number;
+    product_option_id: number;
+    name: Record<string, string>;
+    option?: ProductOption;
+};
+
 export type ProductVariant = {
     id: number;
     product_id: number;
@@ -55,6 +77,7 @@ export type ProductVariant = {
     purchasable: 'in_stock' | 'backorder' | 'out_stock' | string;
     shippable: number;
     prices: ProductVariantPrice[];
+    values?: ProductVariantValue[];
 };
 
 export type ProductBrand = {
@@ -77,4 +100,5 @@ export type Product = {
     deleted_at: string | null;
     variants?: ProductVariant[];
     brand?: ProductBrand | null;
+    product_options?: ProductOption[];
 };
