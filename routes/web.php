@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\ProductController;
 use App\Models\Product;
@@ -16,6 +17,7 @@ Route::inertia('/', 'Welcome', [
 
 Route::get('collections/{slug}', [CollectionController::class, 'show'])->name('collections.show');
 Route::get('products/{slug}', [ProductController::class, 'show'])->name('products.show');
+Route::post('add-to-cart/{variant}', [CartController::class, 'store'])->name('add-to-cart');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');

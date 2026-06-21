@@ -22,6 +22,15 @@ declare module '@inertiajs/core' {
             sidebarOpen: boolean;
             catalogMenu: CatalogMenuItem[];
             activeCollectionIds?: number[];
+            cartItemsCount: number;
+            cartLines: Array<{
+                id: number;
+                quantity: number;
+                name: string;
+                price: number | null;
+                currency: string | null;
+                slug: string | null;
+            }>;
             [key: string]: unknown;
         };
     }

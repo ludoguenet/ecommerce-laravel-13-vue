@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Product, ProductOption, ProductOptionValue, ProductVariant } from '@/types/products';
-import { Head } from '@inertiajs/vue3';
+import { store as addCartAction } from '@/actions/App/Http/Controllers/CartController';
+import { Head, router } from '@inertiajs/vue3';
 import { ChevronLeft } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
@@ -81,6 +82,15 @@ const selectedOptionValueName = (option: ProductOption): string => {
     const value = option.values.find((v) => v.id === selectedId);
     return value ? optionValueName(value) : '';
 };
+
+const addToCart = () => {
+    if (! selectedVariant.value) return;
+
+    router.visit(addCartAction({ variant: selectedVariant.value.id }), {
+        data: { quantity: 1 },
+        preserveScroll: true,
+    });
+}
 
 const hasOptions = computed(() => (props.product.product_options?.length ?? 0) > 0);
 
@@ -253,6 +263,10 @@ const goBack = () => window.history.back();
                         class="prose prose-sm prose-neutral max-w-none border-t border-neutral-100 pt-6 text-neutral-600"
                         v-html="description"
                     />
+
+                    <button @click.prevent="addToCart" class="bg-neutral-900 border-neutral-900 border rounded-lg text-white px-3 py-1.5 font-medium text-md hover:cursor-pointer transition-all hover:border-neutral-400 hover:bg-neutral-700">
+                        Ajouter au panier
+                    </button>
                 </div>
             </div>
         </div>

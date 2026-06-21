@@ -5,6 +5,8 @@ namespace App\Http\Middleware;
 use App\Services\CatalogMenuService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Lunar\Facades\CartSession;
+use Lunar\Models\ProductVariant;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -44,6 +46,36 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'catalogMenu' => fn () => app()->make(CatalogMenuService::class)->getMenu(),
+            'cartItemsCount' => function () {
+                $cart = CartSession::current();
+
+                return $cart ? $cart->lines()->sum('quantity') : 0;
+            },
+            'cartLines' => function () {
+                if (! $cart = CartSession::current()) {
+                    return [];
+                }
+
+                $lines = $cart->lines()->get();
+
+                $variants = ProductVariant::with(['product.defaultUrl', 'prices.currency'])
+                    ->whereIn('id', $lines->pluck('purchasable_id'))
+                    ->get()
+                    ->keyBy('id');
+
+                return $lines->map(function ($line) use ($variants) {
+                    $variant = $variants[$line->purchasable_id] ?? null;
+
+                    return [
+                        'id' => $line->id,
+                        'quantity' => $line->quantity,
+                        'name' => $variant?->product->attribute_data['name']?->getValue()->get('en') ?? '',
+                        'price' => $variant?->prices->first()?->price->value,
+                        'currency' => $variant?->prices->first()?->currency->code,
+                        'slug' => $variant?->product->defaultUrl?->slug,
+                    ];
+                });
+            },
         ];
     }
 }
