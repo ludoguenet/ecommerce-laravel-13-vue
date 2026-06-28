@@ -51,6 +51,9 @@ class HandleInertiaRequests extends Middleware
 
                 return $cart ? $cart->lines()->sum('quantity') : 0;
             },
+            'subTotal' => CartSession::current()?->subTotal->formatted(),
+            'shippingSubTotal' => CartSession::current()?->shippingSubTotal->formatted(),
+            'total' => CartSession::current()?->total->formatted,
             'cartLines' => function () {
                 if (! $cart = CartSession::current()) {
                     return [];
@@ -58,7 +61,7 @@ class HandleInertiaRequests extends Middleware
 
                 $lines = $cart->lines()->get();
 
-                $variants = ProductVariant::with(['product.defaultUrl', 'prices.currency'])
+                $variants = ProductVariant::with(['product.defaultUrl', 'product.media', 'prices.currency'])
                     ->whereIn('id', $lines->pluck('purchasable_id'))
                     ->get()
                     ->keyBy('id');
@@ -70,6 +73,9 @@ class HandleInertiaRequests extends Middleware
                         'id' => $line->id,
                         'quantity' => $line->quantity,
                         'name' => $variant?->product->attribute_data['name']?->getValue()->get('en') ?? '',
+                        'thumbnail' => $variant?->product->append(['small_image_url']),
+                        'attribute_data' => $variant?->product->attribute_data,
+                        'sku' => $variant->sku,
                         'price' => $variant?->prices->first()?->price->value,
                         'currency' => $variant?->prices->first()?->currency->code,
                         'slug' => $variant?->product->defaultUrl?->slug,

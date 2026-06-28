@@ -29,6 +29,7 @@ const cartLines = computed(() => page.props.cartLines as Array<{
     id: number;
     quantity: number;
     name: string;
+    thumbnail: string;
     price: number | null;
     currency: string | null;
     slug: string | null;
@@ -65,7 +66,9 @@ const formatPrice = (value: number, currency: string) =>
                     </div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" class="w-72">
-                    <DropdownMenuLabel>Panier</DropdownMenuLabel>
+                    <DropdownMenuLabel>
+                        <Link href="/cart">Mon Panier</Link>
+                    </DropdownMenuLabel>
                     <template v-if="cartLines.length > 0">
                         <DropdownMenuSeparator />
                         <div class="max-h-64 overflow-y-auto">

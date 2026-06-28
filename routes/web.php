@@ -18,6 +18,9 @@ Route::inertia('/', 'Welcome', [
 Route::get('collections/{slug}', [CollectionController::class, 'show'])->name('collections.show');
 Route::get('products/{slug}', [ProductController::class, 'show'])->name('products.show');
 Route::post('add-to-cart/{variant}', [CartController::class, 'store'])->name('add-to-cart');
+Route::get('cart', [CartController::class, 'show'])->name('cart.show');
+Route::patch('cart/lines', [CartController::class, 'updateLine'])->name('cart.lines.update');
+Route::delete('cart/lines/{line}', [CartController::class, 'removeLine'])->name('cart.lines.remove');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');
