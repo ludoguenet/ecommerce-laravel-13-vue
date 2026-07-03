@@ -27,6 +27,16 @@ class ProductController extends Controller
             ])
             ->firstOrFail();
 
+        $product->variants->each(function ($variant) {
+            try {
+                $variant->resolved_price = $variant->pricing()->get()->matched;
+            } catch (\Throwable) {
+                $variant->resolved_price = null;
+            }
+
+            $variant->makeHidden('prices');
+        });
+
         $product->append(['small_image_url', 'medium_images_urls']);
 
         return inertia('Products/Show', [

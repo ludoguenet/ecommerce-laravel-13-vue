@@ -100,7 +100,7 @@ const formatPrice = (value: number, currencyCode: string): string =>
     new Intl.NumberFormat('fr-FR', { style: 'currency', currency: currencyCode }).format(value / 100);
 
 const formattedPrice = computed(() => {
-    const price = selectedVariant.value?.prices?.[0];
+    const price = selectedVariant.value?.resolved_price;
     return price ? formatPrice(price.price.value, price.currency.code) : null;
 });
 

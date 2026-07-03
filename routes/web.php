@@ -4,8 +4,11 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\ProductController;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
+use Lunar\Models\Customer;
+use Lunar\Models\CustomerGroup;
 use Lunar\Models\ProductOption;
 use Lunar\Models\ProductVariant;
 use Lunar\Models\TaxClass;
@@ -14,6 +17,17 @@ use Lunar\Utils\Arr;
 Route::inertia('/', 'Welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
+
+// Route::get('/test/customers', function () {
+//     // $customer = Customer::first();
+//     // $user = User::firstWhere('email', 'nahaz@mailinator.com');
+//     // $customer->users()->attach($user);
+
+//     // $customerGroup = CustomerGroup::find(2);
+
+//     // $customer->customerGroups()->sync($customerGroup);
+
+// })->name('test.customers');
 
 Route::get('collections/{slug}', [CollectionController::class, 'show'])->name('collections.show');
 Route::get('products/{slug}', [ProductController::class, 'show'])->name('products.show');

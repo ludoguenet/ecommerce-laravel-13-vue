@@ -9,7 +9,8 @@ const page = usePage();
 const cartItemsCount = computed(() => page.props.cartItemsCount as number);
 
 const subTotal = computed(() => page.props.subTotal);
-const shippingSubTotal = computed(() => page.props.shippingSubTotal);
+// const shippingSubTotal = computed(() => page.props.shippingSubTotal);
+const taxTotal = computed(() => page.props.taxTotal);
 const total = computed(() => page.props.total);
 
 const cartLines = computed(() => page.props.cartLines as Array<{
@@ -105,8 +106,8 @@ const removeCartLine = (lineId: number) => {
                                 <dd class="font-medium text-gray-900">{{ subTotal }}</dd>
                             </div>
                             <div class="flex justify-between text-gray-600">
-                                <dt>Livraison</dt>
-                                <dd class="font-medium text-gray-900">{{ shippingSubTotal }}</dd>
+                                <dt>TVA</dt>
+                                <dd class="font-medium text-gray-900">{{ taxTotal }}</dd>
                             </div>
                             <div class="flex justify-between border-t border-gray-200 pt-3 text-base font-semibold text-gray-900">
                                 <dt>Total</dt>

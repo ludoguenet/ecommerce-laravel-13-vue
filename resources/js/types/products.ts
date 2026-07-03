@@ -77,6 +77,7 @@ export type ProductVariant = {
     purchasable: 'in_stock' | 'backorder' | 'out_stock' | string;
     shippable: number;
     prices: ProductVariantPrice[];
+    resolved_price: ProductVariantPrice;
     values?: ProductVariantValue[];
 };
 

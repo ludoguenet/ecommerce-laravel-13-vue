@@ -52,16 +52,17 @@ class HandleInertiaRequests extends Middleware
                 return $cart ? $cart->lines()->sum('quantity') : 0;
             },
             'subTotal' => CartSession::current()?->subTotal->formatted(),
-            'shippingSubTotal' => CartSession::current()?->shippingSubTotal->formatted(),
+            // 'shippingSubTotal' => CartSession::current()?->shippingSubTotal->formatted(),
+            'taxTotal' => CartSession::current()?->taxTotal->formatted(),
             'total' => CartSession::current()?->total->formatted,
             'cartLines' => function () {
                 if (! $cart = CartSession::current()) {
                     return [];
                 }
 
-                $lines = $cart->lines()->get();
+                $lines = $cart->lines;
 
-                $variants = ProductVariant::with(['product.defaultUrl', 'product.media', 'prices.currency'])
+                $variants = ProductVariant::with(['product.defaultUrl', 'product.media'])
                     ->whereIn('id', $lines->pluck('purchasable_id'))
                     ->get()
                     ->keyBy('id');
@@ -76,8 +77,8 @@ class HandleInertiaRequests extends Middleware
                         'thumbnail' => $variant?->product->append(['small_image_url']),
                         'attribute_data' => $variant?->product->attribute_data,
                         'sku' => $variant->sku,
-                        'price' => $variant?->prices->first()?->price->value,
-                        'currency' => $variant?->prices->first()?->currency->code,
+                        'price' => $line->unitPrice?->value,
+                        'currency' => $line->unitPrice?->currency->code,
                         'slug' => $variant?->product->defaultUrl?->slug,
                     ];
                 });
