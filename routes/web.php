@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\ProductController;
 use App\Models\Product;
@@ -35,6 +36,9 @@ Route::post('add-to-cart/{variant}', [CartController::class, 'store'])->name('ad
 Route::get('cart', [CartController::class, 'show'])->name('cart.show');
 Route::patch('cart/lines', [CartController::class, 'updateLine'])->name('cart.lines.update');
 Route::delete('cart/lines/{line}', [CartController::class, 'removeLine'])->name('cart.lines.remove');
+
+Route::get('checkout', [CheckoutController::class, 'show'])->name('checkout.show');
+Route::post('checkout/addresses', [CheckoutController::class, 'saveAddresses'])->name('checkout.addresses');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');

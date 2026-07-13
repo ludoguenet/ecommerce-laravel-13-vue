@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { removeLine, updateLine } from '@/actions/App/Http/Controllers/CartController';
+import { show as showCheckout } from '@/routes/checkout';
 import { Minus, Plus, Trash2 } from 'lucide-vue-next';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
@@ -115,11 +116,12 @@ const removeCartLine = (lineId: number) => {
                             </div>
                         </dl>
 
-                        <button
-                            class="mt-6 w-full rounded-md bg-gray-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-gray-700"
+                        <Link
+                            :href="showCheckout()"
+                            class="mt-6 block w-full rounded-md bg-gray-900 px-4 py-3 text-center text-sm font-medium text-white transition hover:bg-gray-700"
                         >
                             Passer la commande
-                        </button>
+                        </Link>
 
                         <Link href="/" class="mt-3 block text-center text-sm text-gray-500 hover:text-gray-900">
                             Continuer mes achats
