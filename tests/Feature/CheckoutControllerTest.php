@@ -3,9 +3,13 @@
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
+use Lunar\DataTypes\Price;
+use Lunar\DataTypes\ShippingOption;
 use Lunar\Facades\CartSession;
+use Lunar\Facades\ShippingManifest;
 use Lunar\Models\Cart;
 use Lunar\Models\Country;
+use Lunar\Models\TaxClass;
 
 uses(RefreshDatabase::class);
 
@@ -13,7 +17,7 @@ beforeEach(function () {
     $this->withoutMiddleware(HandleInertiaRequests::class);
 });
 
-function mockCart(bool $isEmpty = false, bool $isShippable = true, mixed $billingAddress = null, mixed $shippingAddress = null): Cart
+function mockCart(bool $isEmpty = false, bool $isShippable = true, mixed $billingAddress = null, mixed $shippingAddress = null, mixed $shippingOption = null): Cart
 {
     $lines = Mockery::mock();
     $lines->shouldReceive('isEmpty')->andReturn($isEmpty);
@@ -23,8 +27,24 @@ function mockCart(bool $isEmpty = false, bool $isShippable = true, mixed $billin
     $cart->shouldReceive('isShippable')->andReturn($isShippable);
     $cart->shouldReceive('getAttribute')->with('billingAddress')->andReturn($billingAddress);
     $cart->shouldReceive('getAttribute')->with('shippingAddress')->andReturn($shippingAddress);
+    $cart->shouldReceive('getShippingOption')->andReturn($shippingOption);
 
     return $cart;
+}
+
+function mockShippingOption(string $identifier, string $formattedPrice = '4,99 €', bool $collect = false): ShippingOption
+{
+    $price = Mockery::mock(Price::class);
+    $price->shouldReceive('formatted')->andReturn($formattedPrice);
+
+    return new ShippingOption(
+        name: 'Livraison standard',
+        description: null,
+        identifier: $identifier,
+        price: $price,
+        taxClass: Mockery::mock(TaxClass::class),
+        collect: $collect,
+    );
 }
 
 it('redirects to cart when cart is empty on show', function () {
@@ -51,6 +71,39 @@ it('renders the checkout page with countries and shippability when cart has item
             ->where('billing', null)
             ->where('shipping', null)
             ->where('isShippable', true)
+            ->where('shippingOptions', [])
+            ->where('selectedShippingOption', null)
+        );
+});
+
+it('does not fetch shipping options on show when no shipping address exists', function () {
+    CartSession::shouldReceive('current')->andReturn(mockCart(isShippable: true));
+
+    ShippingManifest::shouldReceive('getOptions')->never();
+
+    $this->get(route('checkout.show'))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Checkout/Show')
+            ->where('shippingOptions', [])
+        );
+});
+
+it('includes shipping options and the selected option on show when a shipping address exists', function () {
+    $option = mockShippingOption('STANDARD', '4,99 €');
+
+    $cart = mockCart(isShippable: true, shippingAddress: (object) ['shipping_option' => 'STANDARD'], shippingOption: $option);
+
+    ShippingManifest::shouldReceive('getOptions')->once()->with($cart)->andReturn(collect([$option]));
+
+    CartSession::shouldReceive('current')->andReturn($cart);
+
+    $this->get(route('checkout.show'))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Checkout/Show')
+            ->has('shippingOptions', 1)
+            ->where('shippingOptions.0.identifier', 'STANDARD')
+            ->where('shippingOptions.0.price', '4,99 €')
+            ->where('selectedShippingOption', 'STANDARD')
         );
 });
 
@@ -160,6 +213,56 @@ it('redirects to cart from saveAddresses when cart is empty', function () {
     $this->post(route('checkout.addresses'), [
         'billing' => validBillingPayload($country->id),
     ])->assertRedirect(route('cart.show'));
+});
+
+it('fails validation when shipping_option is missing', function () {
+    CartSession::shouldReceive('current')->andReturn(mockCart(isShippable: true));
+    ShippingManifest::shouldReceive('getOptions')->andReturn(collect());
+
+    $this->post(route('checkout.shipping'), [])
+        ->assertSessionHasErrors(['shipping_option']);
+});
+
+it('fails validation when shipping_option is not an available identifier', function () {
+    CartSession::shouldReceive('current')->andReturn(mockCart(isShippable: true));
+    ShippingManifest::shouldReceive('getOptions')->andReturn(collect([mockShippingOption('STANDARD')]));
+
+    $this->post(route('checkout.shipping'), ['shipping_option' => 'UNKNOWN'])
+        ->assertSessionHasErrors(['shipping_option']);
+});
+
+it('redirects to cart from saveShipping when cart is empty', function () {
+    CartSession::shouldReceive('current')->andReturn(mockCart(isEmpty: true, isShippable: true));
+    ShippingManifest::shouldReceive('getOptions')->andReturn(collect([mockShippingOption('STANDARD')]));
+
+    $this->post(route('checkout.shipping'), ['shipping_option' => 'STANDARD'])
+        ->assertRedirect(route('cart.show'));
+});
+
+it('sets the shipping option on the cart on success', function () {
+    $option = mockShippingOption('STANDARD');
+
+    $cart = mockCart(isShippable: true);
+    $cart->shouldReceive('setShippingOption')->once()->with($option);
+
+    CartSession::shouldReceive('current')->andReturn($cart);
+    ShippingManifest::shouldReceive('getOptions')->andReturn(collect([$option]));
+    ShippingManifest::shouldReceive('getOption')->once()->with($cart, 'STANDARD')->andReturn($option);
+
+    $this->post(route('checkout.shipping'), ['shipping_option' => 'STANDARD'])
+        ->assertRedirect(route('checkout.show'));
+});
+
+it('returns an error when the resolved shipping option is no longer available', function () {
+    $cart = mockCart(isShippable: true);
+    $cart->shouldReceive('setShippingOption')->never();
+
+    CartSession::shouldReceive('current')->andReturn($cart);
+    ShippingManifest::shouldReceive('getOptions')->andReturn(collect([mockShippingOption('STANDARD')]));
+    ShippingManifest::shouldReceive('getOption')->once()->with($cart, 'STANDARD')->andReturn(null);
+
+    $this->post(route('checkout.shipping'), ['shipping_option' => 'STANDARD'])
+        ->assertSessionHasErrors(['shipping_option']);
 });
 
 function validBillingPayload(int $countryId): array

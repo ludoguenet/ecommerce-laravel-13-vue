@@ -39,6 +39,7 @@ Route::delete('cart/lines/{line}', [CartController::class, 'removeLine'])->name(
 
 Route::get('checkout', [CheckoutController::class, 'show'])->name('checkout.show');
 Route::post('checkout/addresses', [CheckoutController::class, 'saveAddresses'])->name('checkout.addresses');
+Route::post('checkout/shipping', [CheckoutController::class, 'saveShipping'])->name('checkout.shipping');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');
