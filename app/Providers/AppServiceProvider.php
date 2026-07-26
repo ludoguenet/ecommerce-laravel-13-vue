@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use App\Models\Product;
-use App\Modifiers\StandardShippingModifier;
 use App\Observers\CollectionObserver;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
@@ -11,7 +10,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Lunar\Admin\Support\Facades\LunarPanel;
-use Lunar\Base\ShippingModifiers;
 use Lunar\Facades\ModelManifest;
 use Lunar\Facades\Telemetry;
 use Lunar\Models\Collection;
@@ -35,11 +33,9 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(ShippingModifiers $shippingModifiers): void
+    public function boot(): void
     {
         $this->configureDefaults();
-
-        $shippingModifiers->add(StandardShippingModifier::class);
     }
 
     /**
