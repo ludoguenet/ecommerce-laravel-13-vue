@@ -13,9 +13,11 @@ use Illuminate\Validation\Rules\Password;
 use Lunar\Admin\Support\Facades\LunarPanel;
 use Lunar\Base\ShippingModifiers;
 use Lunar\Facades\ModelManifest;
+use Lunar\Facades\Payments;
 use Lunar\Facades\Telemetry;
 use Lunar\Models\Collection;
 use Lunar\Models\Contracts\Product as ProductContract;
+use Lunar\Stripe\StripePaymentType;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -40,6 +42,8 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
 
         $shippingModifiers->add(StandardShippingModifier::class);
+
+        Payments::extend('stripe', fn ($app) => $app->make(StripePaymentType::class));
     }
 
     /**

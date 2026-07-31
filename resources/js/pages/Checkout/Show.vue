@@ -27,6 +27,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { payment as showPayment } from '@/routes/checkout';
 
 type Address = {
     country_id: number | null;
@@ -68,6 +69,10 @@ const taxTotal = computed(() => page.props.taxTotal);
 const total = computed(() => page.props.total);
 
 const shipToBilling = ref(props.shipping === null);
+
+const canProceedToPayment = computed(
+    () => !!props.billing && (!props.isShippable || !!props.selectedShippingOption),
+);
 </script>
 
 <template>
@@ -622,6 +627,18 @@ const shipToBilling = ref(props.shipping === null);
                         options.
                     </CardContent>
                 </Card>
+
+                <Button
+                    v-if="canProceedToPayment"
+                    as-child
+                    size="lg"
+                    class="w-full"
+                >
+                    <Link :href="showPayment()">Procéder au paiement</Link>
+                </Button>
+                <Button v-else size="lg" class="w-full" disabled>
+                    Procéder au paiement
+                </Button>
             </div>
 
             <div class="lg:col-span-1">

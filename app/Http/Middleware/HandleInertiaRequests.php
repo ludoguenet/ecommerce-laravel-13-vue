@@ -51,10 +51,10 @@ class HandleInertiaRequests extends Middleware
 
                 return $cart ? $cart->lines()->sum('quantity') : 0;
             },
-            'subTotal' => CartSession::current()?->subTotal->formatted(),
+            'subTotal' => CartSession::current()?->subTotal?->formatted(),
             'shippingTotal' => CartSession::current()?->shippingTotal?->formatted(),
-            'taxTotal' => CartSession::current()?->taxTotal->formatted(),
-            'total' => CartSession::current()?->total->formatted,
+            'taxTotal' => CartSession::current()?->taxTotal?->formatted(),
+            'total' => CartSession::current()?->total?->formatted(),
             'cartLines' => function () {
                 if (! $cart = CartSession::current()) {
                     return [];

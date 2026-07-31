@@ -15,7 +15,8 @@
         "laravel/framework": "^13.7",
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.14",
-        "lunarphp/lunar": "1.5.0-beta.3"
+        "lunarphp/lunar": "1.5.0-beta.6",
+        "lunarphp/stripe": "1.5.0-beta.6"
     },
     "require-dev": {
         "fakerphp/faker": "^1.24",

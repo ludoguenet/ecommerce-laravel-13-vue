@@ -3,13 +3,19 @@
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
+use Lunar\Base\DataTransferObjects\PaymentAuthorize;
 use Lunar\DataTypes\Price;
 use Lunar\DataTypes\ShippingOption;
 use Lunar\Facades\CartSession;
+use Lunar\Facades\Payments;
 use Lunar\Facades\ShippingManifest;
 use Lunar\Models\Cart;
 use Lunar\Models\Country;
+use Lunar\Models\Currency;
+use Lunar\Models\Order;
 use Lunar\Models\TaxClass;
+use Lunar\Stripe\Facades\Stripe;
+use Stripe\PaymentIntent;
 
 uses(RefreshDatabase::class);
 
@@ -263,6 +269,131 @@ it('returns an error when the resolved shipping option is no longer available', 
 
     $this->post(route('checkout.shipping'), ['shipping_option' => 'STANDARD'])
         ->assertSessionHasErrors(['shipping_option']);
+});
+
+function mockAddress(array $attributes = []): object
+{
+    return new class($attributes)
+    {
+        public function __construct(array $attributes)
+        {
+            foreach ($attributes as $key => $value) {
+                $this->$key = $value;
+            }
+        }
+
+        public function loadMissing(...$args): static
+        {
+            return $this;
+        }
+    };
+}
+
+it('redirects to cart when cart is empty on payment', function () {
+    CartSession::shouldReceive('current')->andReturnNull();
+
+    $this->get(route('checkout.payment'))->assertRedirect(route('cart.show'));
+});
+
+it('redirects to cart when cart has no lines on payment', function () {
+    CartSession::shouldReceive('current')->andReturn(mockCart(isEmpty: true));
+
+    $this->get(route('checkout.payment'))->assertRedirect(route('cart.show'));
+});
+
+it('redirects to checkout show when billing address is missing on payment', function () {
+    CartSession::shouldReceive('current')->andReturn(mockCart(isShippable: false));
+
+    $this->get(route('checkout.payment'))
+        ->assertRedirect(route('checkout.show'))
+        ->assertSessionHasErrors(['checkout']);
+});
+
+it('redirects to checkout show when a shippable cart has no shipping option on payment', function () {
+    $cart = mockCart(isShippable: true, billingAddress: mockAddress());
+
+    CartSession::shouldReceive('current')->andReturn($cart);
+
+    $this->get(route('checkout.payment'))
+        ->assertRedirect(route('checkout.show'))
+        ->assertSessionHasErrors(['checkout']);
+});
+
+it('renders the payment page with a client secret when the cart is ready', function () {
+    $billing = mockAddress(['first_name' => 'Jane']);
+    $cart = mockCart(isShippable: false, billingAddress: $billing);
+
+    CartSession::shouldReceive('current')->andReturn($cart);
+    Stripe::shouldReceive('fetchOrCreateIntent')->once()->with($cart)
+        ->andReturn(PaymentIntent::constructFrom(['client_secret' => 'secret_123']));
+
+    $this->get(route('checkout.payment'))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Checkout/Payment')
+            ->where('clientSecret', 'secret_123')
+        );
+});
+
+it('redirects to cart from callback when cart is empty', function () {
+    CartSession::shouldReceive('current')->andReturnNull();
+
+    $this->get(route('checkout.callback', ['payment_intent' => 'pi_123']))
+        ->assertRedirect(route('cart.show'));
+});
+
+it('forgets the cart and redirects to the confirmation page when payment succeeds', function () {
+    $cart = mockCart();
+
+    CartSession::shouldReceive('current')->andReturn($cart);
+    CartSession::shouldReceive('forget')->once();
+
+    $driver = Mockery::mock();
+    $driver->shouldReceive('cart')->once()->with($cart)->andReturnSelf();
+    $driver->shouldReceive('withData')->once()->with(['payment_intent' => 'pi_123'])->andReturnSelf();
+    $driver->shouldReceive('authorize')->once()->andReturn(new PaymentAuthorize(success: true, orderId: 42));
+
+    Payments::shouldReceive('driver')->once()->with('card')->andReturn($driver);
+
+    $this->get(route('checkout.callback', ['payment_intent' => 'pi_123']))
+        ->assertRedirect(route('checkout.complete', ['order' => 42]));
+});
+
+it('redirects back to the payment page with an error when authorization fails', function () {
+    $cart = mockCart();
+
+    CartSession::shouldReceive('current')->andReturn($cart);
+    CartSession::shouldReceive('forget')->never();
+
+    $driver = Mockery::mock();
+    $driver->shouldReceive('cart')->once()->with($cart)->andReturnSelf();
+    $driver->shouldReceive('withData')->once()->andReturnSelf();
+    $driver->shouldReceive('authorize')->once()->andReturn(new PaymentAuthorize(success: false, message: 'Card declined.'));
+
+    Payments::shouldReceive('driver')->once()->with('card')->andReturn($driver);
+
+    $this->get(route('checkout.callback', ['payment_intent' => 'pi_123']))
+        ->assertRedirect(route('checkout.payment'))
+        ->assertSessionHasErrors(['payment' => 'Card declined.']);
+});
+
+it('aborts with a 404 when the order is still a draft', function () {
+    Currency::factory()->create(['default' => true]);
+
+    $order = Order::factory()->create(['placed_at' => null]);
+
+    $this->get(route('checkout.complete', ['order' => $order]))->assertNotFound();
+});
+
+it('renders the confirmation page for a placed order', function () {
+    Currency::factory()->create(['default' => true]);
+
+    $order = Order::factory()->create(['placed_at' => now()]);
+
+    $this->get(route('checkout.complete', ['order' => $order]))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Checkout/Complete')
+            ->where('order.reference', $order->reference)
+        );
 });
 
 function validBillingPayload(int $countryId): array
