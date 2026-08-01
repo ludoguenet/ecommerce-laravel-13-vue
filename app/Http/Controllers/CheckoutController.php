@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Lunar\Exceptions\Carts\CartException;
 use Lunar\Facades\CartSession;
 use Lunar\Facades\Payments;
 use Lunar\Facades\ShippingManifest;
@@ -99,6 +100,13 @@ class CheckoutController extends Controller
         if (! $cart->billingAddress || ($cart->isShippable() && ! $cart->getShippingOption())) {
             return redirect()->route('checkout.show')
                 ->withErrors(['checkout' => 'Merci de renseigner vos informations de livraison avant de payer.']);
+        }
+
+        try {
+            CartSession::createOrder(false);
+        } catch (CartException $e) {
+            return redirect()->route('checkout.show')
+                ->withErrors(['checkout' => $e->getMessage()]);
         }
 
         $intent = Stripe::fetchOrCreateIntent($cart);

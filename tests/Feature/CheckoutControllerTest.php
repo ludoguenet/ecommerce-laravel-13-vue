@@ -2,10 +2,12 @@
 
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\MessageBag;
 use Inertia\Testing\AssertableInertia;
 use Lunar\Base\DataTransferObjects\PaymentAuthorize;
 use Lunar\DataTypes\Price;
 use Lunar\DataTypes\ShippingOption;
+use Lunar\Exceptions\Carts\CartException;
 use Lunar\Facades\CartSession;
 use Lunar\Facades\Payments;
 use Lunar\Facades\ShippingManifest;
@@ -324,6 +326,7 @@ it('renders the payment page with a client secret when the cart is ready', funct
     $cart = mockCart(isShippable: false, billingAddress: $billing);
 
     CartSession::shouldReceive('current')->andReturn($cart);
+    CartSession::shouldReceive('createOrder')->once()->with(false);
     Stripe::shouldReceive('fetchOrCreateIntent')->once()->with($cart)
         ->andReturn(PaymentIntent::constructFrom(['client_secret' => 'secret_123']));
 
@@ -332,6 +335,19 @@ it('renders the payment page with a client secret when the cart is ready', funct
             ->component('Checkout/Payment')
             ->where('clientSecret', 'secret_123')
         );
+});
+
+it('redirects to checkout show with an error when the cart fails order validation on payment', function () {
+    $billing = mockAddress(['first_name' => 'Jane']);
+    $cart = mockCart(isShippable: false, billingAddress: $billing);
+
+    CartSession::shouldReceive('current')->andReturn($cart);
+    CartSession::shouldReceive('createOrder')->once()->with(false)
+        ->andThrow(new CartException(new MessageBag(['Le panier ne peut pas être transformé en commande.'])));
+
+    $this->get(route('checkout.payment'))
+        ->assertRedirect(route('checkout.show'))
+        ->assertSessionHasErrors(['checkout' => 'Le panier ne peut pas être transformé en commande.']);
 });
 
 it('redirects to cart from callback when cart is empty', function () {
