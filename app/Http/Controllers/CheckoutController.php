@@ -16,6 +16,45 @@ use Lunar\Models\Country;
 use Lunar\Models\Order;
 use Lunar\Stripe\Facades\Stripe;
 
+/**
+ * Episode outline: Stripe payment + order creation.
+ *
+ * Suggested recording order, one file per step:
+ *
+ * 1. composer.json / .env.example — composer require lunarphp/stripe, publish
+ *    config/lunar/stripe.php, add STRIPE_SECRET / STRIPE_PUBLIC / LUNAR_STRIPE_WEBHOOK_SECRET
+ *    and VITE_STRIPE_PUBLIC (Vite only exposes VITE_-prefixed vars to the frontend).
+ * 2. config/services.php — expose the Stripe keys via the services array.
+ * 3. config/lunar/payments.php — register the "card" type with the "stripe" driver.
+ * 4. app/Providers/AppServiceProvider.php (boot()) — Payments::extend('stripe', ...)
+ *    wires the driver into Lunar's payment manager.
+ * 5. routes/web.php — three new routes: checkout/payment (GET, show the form),
+ *    checkout/callback (GET, Stripe redirects here), checkout/complete/{order}.
+ * 6. CheckoutController::payment() below — the key teaching moment:
+ *      a. guard clauses (empty cart, missing billing/shipping option)
+ *      b. CartSession::createOrder(false) creates the DRAFT order up front
+ *         (see the "Creating the Order" section of Lunar's checkout guide) —
+ *         explain this is what actually reserves stock/records intent, not
+ *         the payment step. Idempotent: revisiting this page won't duplicate.
+ *      c. Stripe::fetchOrCreateIntent($cart) creates/reuses the PaymentIntent.
+ * 7. resources/js/pages/Checkout/Payment.vue — mount the Stripe Payment Element,
+ *    call stripe.confirmPayment(). Two gotchas worth calling out on camera:
+ *      - return_url must be an ABSOLUTE url (wrap the Wayfinder path with
+ *        `new URL(path, window.location.origin)`), Stripe rejects relative ones.
+ *      - fields.billingDetails: 'never' requires every billing_details field
+ *        (phone, email, address...) to be passed explicitly, even as '' — not
+ *        undefined, or confirmPayment() throws an IntegrationError.
+ * 8. CheckoutController::callback() below — Payments::driver('card')->authorize()
+ *    finalizes the draft order created in step 6, then CartSession::forget().
+ * 9. CheckoutController::complete() below — loads the order + addresses,
+ *    formats everything into plain arrays for Inertia (never leak Eloquent
+ *    models straight to the frontend).
+ * 10. resources/js/pages/Checkout/Complete.vue — the confirmation page design.
+ * 11. tests/Feature/CheckoutControllerTest.php — Mockery for CartSession/
+ *     Payments, Stripe::fake()-style doubles via PaymentIntent::constructFrom(),
+ *     and a reminder to run `npm run build` before testing new Inertia pages
+ *     (the manifest must know about them or full-page test requests 500).
+ */
 class CheckoutController extends Controller
 {
     public function show(): Response|RedirectResponse
