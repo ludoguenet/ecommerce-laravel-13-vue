@@ -11,7 +11,6 @@ return [
         ],
         'card' => [
             'driver' => 'stripe',
-            'released' => 'payment-received',
         ],
     ],
 
